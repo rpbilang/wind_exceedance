@@ -367,15 +367,15 @@ export default function WindPOECalculator() {
       </div>
 
       <div style={{ width: "100%", padding: "16px 16px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "240px minmax(0,1fr)", gap: "16px", alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "320px minmax(0,1fr)", gap: "20px", alignItems: "start" }}>
 
           {/* ── INPUT PANEL ── */}
           <div style={{ background: "#fff", borderRadius: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-            <div style={{ background: "linear-gradient(135deg,#0f2744,#1e3a5f)", padding: "14px 16px" }}>
+            <div style={{ background: "linear-gradient(135deg,#0f2744,#1e3a5f)", padding: "18px 22px" }}>
               <div style={{ color: "#fff", fontSize: "16px", fontWeight: "700" }}>Input Parameters</div>
               <div style={{ color: "#94a3b8", fontSize: "12px", marginTop: "2px" }}>Fill in all required fields</div>
             </div>
-            <div style={{ padding: "14px 16px" }}>
+            <div style={{ padding: "20px 22px" }}>
               <div style={{ fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "8px" }}>Energy Estimate Source</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "18px" }}>
                 {[["Gross AEP", true], ["Net AEP", false]].map(([lbl, v]) => (
