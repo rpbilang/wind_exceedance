@@ -158,7 +158,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
         <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: "#f9fafb" }}>
-              <th style={{ width: "18%", padding: "8px 10px", textAlign: "left", fontSize: "10px", fontWeight: "700", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #e5e7eb" }}>Scenario</th>
+              <th style={{ width: "22%", padding: "8px 10px", textAlign: "left", fontSize: "10px", fontWeight: "700", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #e5e7eb" }}>Scenario</th>
               {pValues.map(pv => {
                 const card = CARDS.find(c => c.p === pv);
                 return (
@@ -175,7 +175,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                 return (
                   <>
                     <th key={`${pv}-gen`} style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg, borderLeft: "1px solid #e5e7eb" }}>GWh/yr</th>
-                    <th key={`${pv}-cf`}  style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg }}>CF %</th>
+                    <th key={`${pv}-cf`}  style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg }}>CF%</th>
                     <th key={`${pv}-delta`} style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg }}>vs Base</th>
                   </>
                 );
@@ -197,27 +197,26 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                     </div>
                   </td>
                   {pValues.map(pv => {
-                    const z    = getZ(pv);
-                    const gen  = calcGen(s.p50adj, s.u, z);
-                    const cf   = ratedCap > 0 ? gen / ratedCap * 100 : 0;
+                    const z       = getZ(pv);
+                    const gen     = calcGen(s.p50adj, s.u, z);
                     const baseGen = calcGen(baseRow.p50adj, baseRow.u, z);
-                    const diff = gen - baseGen;
-                    const pct  = baseGen > 0 ? diff / baseGen * 100 : 0;
-                    const card = CARDS.find(c => c.p === pv);
+                    const diff    = gen - baseGen;
+                    const pct     = baseGen > 0 ? diff / baseGen * 100 : 0;
+                    const card    = CARDS.find(c => c.p === pv);
                     return (
                       <>
                         <td key={`${pv}-gen`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6", borderLeft: "1px solid #f3f4f6" }}>
-                          <div style={{ fontSize: "12px", fontWeight: s.bold ? "700" : "500", color: "#111827" }}>{fmt(gen)}</div>
+                          <div style={{ fontSize: "12px", fontWeight: s.bold ? "700" : "500", color: s.bold ? card.accent : "#111827" }}>{fmt(gen)}</div>
                         </td>
                         <td key={`${pv}-cf`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
-                          <div style={{ fontSize: "11px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#374151" }}>{fmt(cf)}%</div>
+                          <div style={{ fontSize: "11px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#6b7280" }}>{fmt(ratedCap > 0 ? gen / ratedCap * 100 : 0)}%</div>
                         </td>
                         <td key={`${pv}-delta`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
                           {s.bold ? (
                             <span style={{ fontSize: "10px", color: "#9ca3af" }}>—</span>
                           ) : (
                             <div>
-                              <div style={{ fontSize: "10px", fontWeight: "700", color: diff > 0 ? "#166534" : "#b91c1c" }}>
+                              <div style={{ fontSize: "11px", fontWeight: "700", color: diff > 0 ? "#166534" : "#b91c1c" }}>
                                 {diff > 0 ? "+" : ""}{fmt(diff, 1)}
                               </div>
                               <div style={{ fontSize: "9px", color: diff > 0 ? "#166534" : "#b91c1c", marginTop: "1px" }}>
@@ -345,6 +344,11 @@ export default function WindPOECalculator() {
   return (
     <div style={{ minHeight: "100vh", background: "#f1f5f9", fontFamily: "'DM Sans',sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body, #root { width: 100%; min-height: 100vh; background: #f1f5f9; overflow-x: hidden; }
+        body { margin: 0; padding: 0; }
+      `}</style>
 
       {/* Nav */}
       <div style={{ background: "#0f2744", padding: "0 28px", display: "flex", alignItems: "center", height: "56px", gap: "14px" }}>
@@ -355,16 +359,16 @@ export default function WindPOECalculator() {
         </div>
       </div>
 
-      <div style={{ maxWidth: "1440px", margin: "0 auto", padding: "24px 28px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "300px minmax(0,1fr)", gap: "24px", alignItems: "start" }}>
+      <div style={{ width: "100%", padding: "16px 16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "240px minmax(0,1fr)", gap: "16px", alignItems: "start" }}>
 
           {/* ── INPUT PANEL ── */}
           <div style={{ background: "#fff", borderRadius: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-            <div style={{ background: "linear-gradient(135deg,#0f2744,#1e3a5f)", padding: "18px 22px" }}>
+            <div style={{ background: "linear-gradient(135deg,#0f2744,#1e3a5f)", padding: "14px 16px" }}>
               <div style={{ color: "#fff", fontSize: "16px", fontWeight: "700" }}>Input Parameters</div>
               <div style={{ color: "#94a3b8", fontSize: "12px", marginTop: "2px" }}>Fill in all required fields</div>
             </div>
-            <div style={{ padding: "22px" }}>
+            <div style={{ padding: "14px 16px" }}>
               <div style={{ fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "8px" }}>Energy Estimate Source</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "18px" }}>
                 {[["Gross AEP", true], ["Net AEP", false]].map(([lbl, v]) => (
