@@ -97,9 +97,14 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
   // beGen > P50 gen means company needs MORE than expected output -> risky
   // beGen < P75 gen means company only needs LESS than P75 output -> very comfortable
   const p75gen = calcGen(p50, u, getZ(75));
-  const beRisky       = beValid && beGen > p50;          // needs more than P50 -> risky
-  const beComfortable = beValid && beGen < p75gen;       // needs less than P75 -> very comfortable
-  const beBelowP50 = beValid && beGen < calcGen(p50, u, 0);
+  // P75 is the company standard — break-even must be BELOW P75 gen to be comfortable
+  // P75 gen > P50 gen (P75 is more conservative, lower output)
+  // beGen < p75gen  → >75% chance of exceeding → ✅ Meets standard
+  // beGen >= p75gen && beGen <= p50 → 50–75% chance → ⚠️ Below standard
+  // beGen > p50     → <50% chance → 🚨 High Risk
+  const beHighRisk    = beValid && beGen > p50;          // needs more than expected P50
+  const beComfortable = beValid && beGen <= p75gen;      // exceeds P75 standard
+  const beCaution     = beValid && !beHighRisk && !beComfortable; // between P75 and P50
 
   return (
     <div style={{ background: "#fff", borderRadius: "16px", border: "1.5px solid #e5e7eb", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px", minWidth: 0, width: "100%" }}>
@@ -257,22 +262,24 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
             </div>
           </div>
           <div style={{ flex: "2", minWidth: "260px" }}>
-            <div style={{ background: beRisky ? "#fef2f2" : beComfortable ? "#f0fdf4" : "#fffbeb", border: `1.5px solid ${beRisky ? "#fca5a5" : beComfortable ? "#bbf7d0" : "#f59e0b"}`, borderRadius: "10px", padding: "12px 16px" }}>
-              <div style={{ fontSize: "13px", fontWeight: "700", color: beRisky ? "#991b1b" : beComfortable ? "#166534" : "#92400e", marginBottom: "4px" }}>
-                {beRisky
-                  ? "⚠️ High Risk — Does Not Meet P75 Company Standard"
+            <div style={{ background: beHighRisk ? "#fef2f2" : beComfortable ? "#f0fdf4" : "#fffbeb", border: `1.5px solid ${beHighRisk ? "#fca5a5" : beComfortable ? "#bbf7d0" : "#f59e0b"}`, borderRadius: "10px", padding: "12px 16px" }}>
+              <div style={{ fontSize: "13px", fontWeight: "700", color: beHighRisk ? "#991b1b" : beComfortable ? "#166534" : "#92400e", marginBottom: "4px" }}>
+                {beHighRisk
+                  ? "🚨 High Risk — Less than 50% chance of meeting target"
                   : beComfortable
-                  ? "✅ Very Comfortable — Better than P50"
-                  : "✔ Acceptable — Meets P75 Company Standard"}
+                  ? "✅ Meets P75 Company Standard"
+                  : "⚠️ Caution — Below P75 Standard (50–75% exceedance)"}
               </div>
               <div style={{ fontSize: "14px", color: "#374151", lineHeight: "1.6" }}>
                 A minimum of <strong>{fmt(beGen)} GWh/yr</strong> corresponds to
                 exceedance probability <strong style={{ fontSize: "16px" }}>P{fmt(bePval, 1)}</strong>.
               </div>
               <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-                {beRisky
-                  ? `There is only a ${fmt(bePval, 1)}% probability of exceeding this target — it requires more than the expected P50 output. Consider revising the financial model.`
-                  : `There is a ${fmt(bePval, 1)}% probability of exceeding this target — meets the P75 company standard.`}
+                {beHighRisk
+                  ? `Only ${fmt(bePval, 1)}% probability of exceeding this — requires more than the expected P50 output. Revise the financial model.`
+                  : beComfortable
+                  ? `${fmt(bePval, 1)}% probability of exceeding this target — comfortably meets the P75 company standard.`
+                  : `${fmt(bePval, 1)}% probability of exceeding this target — falls short of the 75% confidence required by company standard.`}
               </div>
             </div>
           </div>
