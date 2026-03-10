@@ -153,30 +153,30 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
         </div>
       </div>
 
-      {/* ── SCENARIO TABLE: Downside / Base / Upside × P90, P75, P50 ── */}
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+      {/* ── SCENARIO TABLE: Upside / Base / Downside × P50, P75, P90 ── */}
+      <div>
+        <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: "#f9fafb" }}>
-              <th style={{ padding: "10px 18px", textAlign: "left", fontSize: "11px", fontWeight: "700", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap" }}>Scenario</th>
+              <th style={{ width: "18%", padding: "8px 10px", textAlign: "left", fontSize: "10px", fontWeight: "700", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #e5e7eb" }}>Scenario</th>
               {pValues.map(pv => {
                 const card = CARDS.find(c => c.p === pv);
                 return (
-                  <th key={pv} colSpan={3} style={{ padding: "10px 16px", textAlign: "center", fontSize: "11px", fontWeight: "700", color: card.accent, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #e5e7eb", background: card.bg, whiteSpace: "nowrap", borderLeft: "1px solid #e5e7eb" }}>
+                  <th key={pv} colSpan={3} style={{ padding: "8px 4px", textAlign: "center", fontSize: "10px", fontWeight: "700", color: card.accent, textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "1px solid #e5e7eb", background: card.bg, borderLeft: "1px solid #e5e7eb" }}>
                     {card.label} — {card.sublabel}
                   </th>
                 );
               })}
             </tr>
             <tr style={{ background: "#f9fafb" }}>
-              <th style={{ padding: "5px 18px", borderBottom: "1px solid #e5e7eb", fontSize: "10px", color: "#9ca3af", fontWeight: "600", textAlign: "left" }}>Assumptions</th>
+              <th style={{ padding: "4px 10px", borderBottom: "1px solid #e5e7eb", fontSize: "9px", color: "#9ca3af", fontWeight: "600", textAlign: "left" }}>Assumptions</th>
               {pValues.map(pv => {
                 const card = CARDS.find(c => c.p === pv);
                 return (
                   <>
-                    <th key={`${pv}-gen`} style={{ padding: "5px 10px", textAlign: "center", fontSize: "10px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg, borderLeft: "1px solid #e5e7eb", whiteSpace: "nowrap" }}>GWh/yr</th>
-                    <th key={`${pv}-cf`}  style={{ padding: "5px 10px", textAlign: "center", fontSize: "10px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg, whiteSpace: "nowrap" }}>CF %</th>
-                    <th key={`${pv}-delta`} style={{ padding: "5px 10px", textAlign: "center", fontSize: "10px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg, whiteSpace: "nowrap" }}>vs Base</th>
+                    <th key={`${pv}-gen`} style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg, borderLeft: "1px solid #e5e7eb" }}>GWh/yr</th>
+                    <th key={`${pv}-cf`}  style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg }}>CF %</th>
+                    <th key={`${pv}-delta`} style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg }}>vs Base</th>
                   </>
                 );
               })}
@@ -187,12 +187,12 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
               const baseRow = scenarios.find(x => x.key === "base");
               return (
                 <tr key={s.key} style={{ background: s.rowBg, borderLeft: `4px solid ${s.border}` }}>
-                  <td style={{ padding: "13px 18px", borderBottom: "1px solid #f3f4f6", whiteSpace: "nowrap" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "16px", color: s.textColor, fontWeight: "800" }}>{s.icon}</span>
-                      <div>
-                        <div style={{ fontSize: "13px", fontWeight: s.bold ? "700" : "600", color: s.textColor }}>{s.label}</div>
-                        <div style={{ fontSize: "10px", color: "#9ca3af", marginTop: "1px", fontFamily: "monospace" }}>{s.note}</div>
+                  <td style={{ padding: "10px 10px", borderBottom: "1px solid #f3f4f6" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontSize: "13px", color: s.textColor, fontWeight: "800", flexShrink: 0 }}>{s.icon}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: "12px", fontWeight: s.bold ? "700" : "600", color: s.textColor }}>{s.label}</div>
+                        <div style={{ fontSize: "9px", color: "#9ca3af", marginTop: "1px", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.note}</div>
                       </div>
                     </div>
                   </td>
@@ -206,21 +206,21 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                     const card = CARDS.find(c => c.p === pv);
                     return (
                       <>
-                        <td key={`${pv}-gen`} style={{ padding: "13px 10px", textAlign: "center", borderBottom: "1px solid #f3f4f6", borderLeft: "1px solid #f3f4f6" }}>
-                          <div style={{ fontSize: "15px", fontWeight: s.bold ? "700" : "500", color: "#111827", fontFamily: s.bold ? "'Playfair Display',serif" : "inherit" }}>{fmt(gen)}</div>
+                        <td key={`${pv}-gen`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6", borderLeft: "1px solid #f3f4f6" }}>
+                          <div style={{ fontSize: "12px", fontWeight: s.bold ? "700" : "500", color: "#111827" }}>{fmt(gen)}</div>
                         </td>
-                        <td key={`${pv}-cf`} style={{ padding: "13px 10px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
-                          <div style={{ fontSize: "14px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#374151" }}>{fmt(cf)}%</div>
+                        <td key={`${pv}-cf`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
+                          <div style={{ fontSize: "11px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#374151" }}>{fmt(cf)}%</div>
                         </td>
-                        <td key={`${pv}-delta`} style={{ padding: "13px 10px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
+                        <td key={`${pv}-delta`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
                           {s.bold ? (
-                            <span style={{ fontSize: "11px", color: "#9ca3af" }}>—</span>
+                            <span style={{ fontSize: "10px", color: "#9ca3af" }}>—</span>
                           ) : (
                             <div>
-                              <div style={{ fontSize: "12px", fontWeight: "700", color: diff > 0 ? "#166534" : "#b91c1c" }}>
-                                {diff > 0 ? "+" : ""}{fmt(diff)} GWh
+                              <div style={{ fontSize: "10px", fontWeight: "700", color: diff > 0 ? "#166534" : "#b91c1c" }}>
+                                {diff > 0 ? "+" : ""}{fmt(diff, 1)}
                               </div>
-                              <div style={{ fontSize: "10px", color: diff > 0 ? "#166534" : "#b91c1c", marginTop: "1px" }}>
+                              <div style={{ fontSize: "9px", color: diff > 0 ? "#166534" : "#b91c1c", marginTop: "1px" }}>
                                 ({pct > 0 ? "+" : ""}{fmt(pct, 1)}%)
                               </div>
                             </div>
