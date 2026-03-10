@@ -80,11 +80,13 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
   const baseScenario = scenarios.find(s => s.key === "base");
 
   // P90 stress range for the visual bar
+  const p75z        = getZ(75);
   const p90z        = getZ(90);
-  const p90upside   = calcGen(scenarios[0].p50adj, scenarios[0].u, p90z);
+  const p75upside   = calcGen(scenarios[0].p50adj, scenarios[0].u, p75z);
+  const p75base     = calcGen(baseScenario.p50adj, baseScenario.u, p75z);
   const p90base     = calcGen(baseScenario.p50adj, baseScenario.u, p90z);
-  const p90downside = calcGen(scenarios[2].p50adj, scenarios[2].u, p90z);
-  const p90swing    = p90upside - p90downside;
+  const p75downside = calcGen(scenarios[2].p50adj, scenarios[2].u, p75z);
+  const p75swing    = p75upside - p75downside;
 
   // Break-even analysis
   const beGen = parseFloat(breakeven);
@@ -113,11 +115,11 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
       {/* ── P90 STRESS RANGE BAR ── */}
       <div style={{ padding: "18px 22px", borderBottom: "1px solid #e5e7eb", background: "#f8faff" }}>
         <div style={{ fontSize: "12px", fontWeight: "700", color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>
-          P90 Risk Band — Bankable Generation Range
+          P75 Risk Band — Company Standard Generation Range
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
           <div style={{ fontSize: "13px", color: "#991b1b", fontWeight: "700", whiteSpace: "nowrap", minWidth: "80px" }}>
-            ▼ {fmt(p90downside)} GWh
+            ▼ {fmt(p75downside)} GWh
           </div>
           <div style={{ flex: 1, position: "relative", height: "28px" }}>
             {/* Background track */}
@@ -129,8 +131,8 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
               background: "linear-gradient(90deg, #fecaca, #bfdbfe, #bbf7d0)"
             }} />
             {/* Base marker */}
-            {p90swing > 0 && (() => {
-              const pct = ((p90base - p90downside) / p90swing) * 100;
+            {p75swing > 0 && (() => {
+              const pct = ((p75base - p75downside) / p75swing) * 100;
               return (
                 <div style={{ position: "absolute", top: "50%", transform: "translate(-50%,-50%)", left: `${pct}%` }}>
                   <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#1e3a8a", border: "3px solid #fff", boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }} />
@@ -139,14 +141,14 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
             })()}
           </div>
           <div style={{ fontSize: "13px", color: "#166534", fontWeight: "700", whiteSpace: "nowrap", minWidth: "80px", textAlign: "right" }}>
-            ▲ {fmt(p90upside)} GWh
+            ▲ {fmt(p75upside)} GWh
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center" }}>
           <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#1e3a8a", flexShrink: 0 }} />
-          <span style={{ fontSize: "12px", color: "#374151" }}>Base P90: <strong>{fmt(p90base)} GWh</strong></span>
+          <span style={{ fontSize: "12px", color: "#374151" }}>Base P75: <strong>{fmt(p75base)} GWh</strong></span>
           <span style={{ fontSize: "12px", color: "#9ca3af", marginLeft: "8px" }}>
-            Swing: <strong style={{ color: "#374151" }}>{fmt(p90swing)} GWh</strong> ({fmt(p90swing / p90base * 100, 1)}% of base)
+            Swing: <strong style={{ color: "#374151" }}>{fmt(p75swing)} GWh</strong> ({fmt(p75swing / p75base * 100, 1)}% of base)
           </span>
         </div>
       </div>
@@ -353,8 +355,8 @@ export default function WindPOECalculator() {
         </div>
       </div>
 
-      <div style={{ maxWidth: "1140px", margin: "0 auto", padding: "24px 20px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "320px minmax(0,1fr)", gap: "20px", alignItems: "start" }}>
+      <div style={{ maxWidth: "1440px", margin: "0 auto", padding: "24px 28px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "300px minmax(0,1fr)", gap: "24px", alignItems: "start" }}>
 
           {/* ── INPUT PANEL ── */}
           <div style={{ background: "#fff", borderRadius: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", overflow: "hidden" }}>
