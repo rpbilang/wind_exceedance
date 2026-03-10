@@ -100,7 +100,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
   const beBelowP50 = beValid && beGen < calcGen(p50, u, 0);
 
   return (
-    <div style={{ background: "#fff", borderRadius: "16px", border: "1.5px solid #e5e7eb", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px" }}>
+    <div style={{ background: "#fff", borderRadius: "16px", border: "1.5px solid #e5e7eb", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px", minWidth: 0, width: "100%" }}>
 
       {/* Header */}
       <div style={{ background: "linear-gradient(135deg,#1e3a8a,#2563eb)", padding: "16px 22px" }}>
@@ -354,7 +354,7 @@ export default function WindPOECalculator() {
       </div>
 
       <div style={{ maxWidth: "1140px", margin: "0 auto", padding: "24px 20px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: "20px", alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "320px minmax(0,1fr)", gap: "20px", alignItems: "start" }}>
 
           {/* ── INPUT PANEL ── */}
           <div style={{ background: "#fff", borderRadius: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", overflow: "hidden" }}>
@@ -442,7 +442,7 @@ export default function WindPOECalculator() {
           </div>
 
           {/* ── RESULTS ── */}
-          <div>
+          <div style={{ minWidth: 0, overflow: "hidden" }}>
             {results ? (<>
 
               {/* Summary bar */}
