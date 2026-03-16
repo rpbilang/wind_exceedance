@@ -331,7 +331,7 @@ export default function WindPOECalculator() {
       if (useGross) {
         const gross = parseFloat(grossAEP);
         if (isNaN(gross)) { setError("Please enter Gross Wind AEP."); return; }
-        p50 = gross * (1 - ((parseFloat(wakes) || 0) + (parseFloat(otherLosses) || 0)) / 100);
+        p50 = gross * (1 - (parseFloat(wakes) || 0) / 100) * (1 - (parseFloat(otherLosses) || 0) / 100);
       } else {
         const net = parseFloat(netAEP);
         if (isNaN(net)) { setError("Please enter Net Wind AEP."); return; }
@@ -385,8 +385,8 @@ export default function WindPOECalculator() {
 
               {useGross ? (<>
                 <Field label="Gross Wind AEP"  value={grossAEP}   onChange={setGrossAEP}   placeholder="e.g. 280.0" unit="GWh" />
-                <Field label="Wake Losses"     value={wakes}       onChange={setWakes}       placeholder="e.g. 5.0"   unit="%" hint="Typical range: 3–8%" />
-                <Field label="Other Losses"    value={otherLosses} onChange={setOtherLosses} placeholder="e.g. 3.0"   unit="%" hint="Electrical, availability, etc." />
+                <Field label="Wake Losses"     value={wakes}       onChange={setWakes}       placeholder="e.g. 5.0"   unit="%" hint="Standalone factor from energy report (e.g. 1 − internal wake%)" />
+                <Field label="Other Losses"    value={otherLosses} onChange={setOtherLosses} placeholder="e.g. 3.0"   unit="%" hint="Product of all non-wake losses (e.g. power curve × availability × electrical)" />
               </>) : (
                 <Field label="Net Wind AEP" value={netAEP} onChange={setNetAEP} placeholder="e.g. 250.0" unit="GWh" hint="Post-losses energy estimate" />
               )}
@@ -461,7 +461,7 @@ export default function WindPOECalculator() {
               {/* Summary bar */}
               <div style={{ background: "linear-gradient(135deg,#0f2744,#1e3a5f)", borderRadius: "16px", padding: "20px 28px", marginBottom: "18px", display: "grid", gridTemplateColumns: "repeat(3,1fr)" }}>
                 {[
-                  { lbl: "P50 Net AEP",       val: fmt(results.p50)      + " GWh", sub: "Expected annual output" },
+                  { lbl: "P75 Net AEP",       val: fmt(results.cards.find(c=>c.p===75)?.gen) + " GWh", sub: "Company standard output" },
                   { lbl: "Installed Capacity", val: fmt(results.totalMW)  + " MW",  sub: "Total nameplate" },
                   { lbl: "Uncertainty (1σ)",   val: fmt(results.uncert,1) + "%",    sub: "Energy estimate spread" },
                 ].map((s, i) => (
