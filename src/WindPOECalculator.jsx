@@ -12,14 +12,12 @@ const CARDS = [
 
 function getZ(p) { const i = PVAL.indexOf(p); return i >= 0 ? ZVAL[i] : null; }
 function fmt(n, d = 2) { return n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }); }
-function calcGen(p50, u, z) { return p50 * (1 - z * u) * 1000; }
+function calcGen(p50, u, z) { return p50 * (1 - z * u); }
 
 // Interpolate P-value from a given generation target
 function genToPvalue(p50, u, targetGen) {
-  // Convert targetGen from MWh to GWh for comparison with p50
-  const targetGWh = targetGen / 1000;
   // targetGen = p50 * (1 - z * u)  =>  z = (p50 - targetGen) / (p50 * u)
-  const z = (p50 - targetGWh) / (p50 * u);
+  const z = (p50 - targetGen) / (p50 * u);
   // Clamp z to our table range
   if (z <= ZVAL[0]) return PVAL[0];
   if (z >= ZVAL[ZVAL.length - 1]) return PVAL[PVAL.length - 1];
@@ -217,7 +215,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                           <div style={{ fontSize: "12px", fontWeight: s.bold ? "700" : "500", color: s.bold ? card.accent : "#111827" }}>{fmt(gen)}</div>
                         </td>
                         <td key={`${pv}-cf`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
-                          <div style={{ fontSize: "11px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#6b7280" }}>{fmt(ratedCap > 0 ? gen / (ratedCap * 1000) * 100 : 0)}%</div>
+                          <div style={{ fontSize: "11px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#6b7280" }}>{fmt(ratedCap > 0 ? gen / ratedCap * 100 : 0)}%</div>
                         </td>
                         <td key={`${pv}-delta`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
                           {s.bold ? (
@@ -340,9 +338,9 @@ export default function WindPOECalculator() {
         if (isNaN(net)) { setError("Please enter Net Wind AEP."); return; }
         p50 = net;
       }
-      const u = uncert / 100, ratedCap = (rated * hrs / 1000) * nTurb;
-      const cards   = CARDS.map(c => { const z = getZ(c.p), gen = calcGen(p50, u, z), cf = ratedCap > 0 ? gen / (ratedCap * 1000) * 100 : 0; return { ...c, gen, cf }; });
-      const allRows = PVAL.map((p, i) => { const gen = p50 * (1 - ZVAL[i] * u) * 1000; return { p, z: ZVAL[i], gen, cf: ratedCap > 0 ? gen / (ratedCap * 1000) * 100 : 0 }; });
+      const u = uncert / 100, ratedCap = (rated * hrs) * nTurb;
+      const cards   = CARDS.map(c => { const z = getZ(c.p), gen = calcGen(p50, u, z), cf = ratedCap > 0 ? gen / ratedCap * 100 : 0; return { ...c, gen, cf }; });
+      const allRows = PVAL.map((p, i) => { const gen = p50 * (1 - ZVAL[i] * u); return { p, z: ZVAL[i], gen, cf: ratedCap > 0 ? gen / ratedCap * 100 : 0 }; });
       setResults({ cards, allRows, p50, ratedCap, totalMW: rated * nTurb, uncert });
     } catch (e) { setError("Error: " + e.message); }
   }, [useGross, grossAEP, netAEP, wakes, otherLosses, uncertainty, numTurb, ratedMW, hours]);
@@ -387,11 +385,11 @@ export default function WindPOECalculator() {
               </div>
 
               {useGross ? (<>
-                <Field label="Gross Wind AEP"  value={grossAEP}   onChange={setGrossAEP}   placeholder="e.g. 280.0" unit="GWh" />
+                <Field label="Gross Wind AEP"  value={grossAEP}   onChange={setGrossAEP}   placeholder="e.g. 280000" unit="MWh" />
                 <Field label="Wake Losses"     value={wakes}       onChange={setWakes}       placeholder="e.g. 5.0"   unit="%" hint="Standalone factor from energy report (e.g. 1 − internal wake%)" />
                 <Field label="Other Losses"    value={otherLosses} onChange={setOtherLosses} placeholder="e.g. 3.0"   unit="%" hint="Product of all non-wake losses (e.g. power curve × availability × electrical)" />
               </>) : (
-                <Field label="Net Wind AEP" value={netAEP} onChange={setNetAEP} placeholder="e.g. 250.0" unit="GWh" hint="Post-losses energy estimate" />
+                <Field label="Net Wind AEP" value={netAEP} onChange={setNetAEP} placeholder="e.g. 250000" unit="MWh" hint="Post-losses energy estimate" />
               )}
 
               <Divider label="Project Details" />
