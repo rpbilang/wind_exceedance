@@ -12,12 +12,14 @@ const CARDS = [
 
 function getZ(p) { const i = PVAL.indexOf(p); return i >= 0 ? ZVAL[i] : null; }
 function fmt(n, d = 2) { return n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }); }
-function calcGen(p50, u, z) { return p50 * (1 - z * u); }
+function calcGen(p50, u, z) { return p50 * (1 - z * u) * 1000; }
 
 // Interpolate P-value from a given generation target
 function genToPvalue(p50, u, targetGen) {
+  // Convert targetGen from MWh to GWh for comparison with p50
+  const targetGWh = targetGen / 1000;
   // targetGen = p50 * (1 - z * u)  =>  z = (p50 - targetGen) / (p50 * u)
-  const z = (p50 - targetGen) / (p50 * u);
+  const z = (p50 - targetGWh) / (p50 * u);
   // Clamp z to our table range
   if (z <= ZVAL[0]) return PVAL[0];
   if (z >= ZVAL[ZVAL.length - 1]) return PVAL[PVAL.length - 1];
@@ -102,7 +104,8 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
   // beGen < p75gen  → >75% chance of exceeding → ✅ Meets standard
   // beGen >= p75gen && beGen <= p50 → 50–75% chance → ⚠️ Below standard
   // beGen > p50     → <50% chance → 🚨 High Risk
-  const beHighRisk    = beValid && beGen > p50;          // needs more than expected P50
+  const p50gen = calcGen(p50, u, getZ(50));
+  const beHighRisk    = beValid && beGen > p50gen;       // needs more than expected P50
   const beComfortable = beValid && beGen <= p75gen;      // exceeds P75 standard
   const beCaution     = beValid && !beHighRisk && !beComfortable; // between P75 and P50
 
@@ -124,7 +127,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
           <div style={{ fontSize: "13px", color: "#991b1b", fontWeight: "700", whiteSpace: "nowrap", minWidth: "80px" }}>
-            ▼ {fmt(p75downside)} GWh
+            ▼ {fmt(p75downside)} MWh
           </div>
           <div style={{ flex: 1, position: "relative", height: "28px" }}>
             {/* Background track */}
@@ -146,14 +149,14 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
             })()}
           </div>
           <div style={{ fontSize: "13px", color: "#166534", fontWeight: "700", whiteSpace: "nowrap", minWidth: "80px", textAlign: "right" }}>
-            ▲ {fmt(p75upside)} GWh
+            ▲ {fmt(p75upside)} MWh
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: "6px", alignItems: "center" }}>
           <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#1e3a8a", flexShrink: 0 }} />
-          <span style={{ fontSize: "12px", color: "#374151" }}>Base P75: <strong>{fmt(p75base)} GWh</strong></span>
+          <span style={{ fontSize: "12px", color: "#374151" }}>Base P75: <strong>{fmt(p75base)} MWh</strong></span>
           <span style={{ fontSize: "12px", color: "#9ca3af", marginLeft: "8px" }}>
-            Swing: <strong style={{ color: "#374151" }}>{fmt(p75swing)} GWh</strong> ({fmt(p75swing / p75base * 100, 1)}% of base)
+            Swing: <strong style={{ color: "#374151" }}>{fmt(p75swing)} MWh</strong> ({fmt(p75swing / p75base * 100, 1)}% of base)
           </span>
         </div>
       </div>
@@ -179,7 +182,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                 const card = CARDS.find(c => c.p === pv);
                 return (
                   <>
-                    <th key={`${pv}-gen`} style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg, borderLeft: "1px solid #e5e7eb" }}>GWh/yr</th>
+                    <th key={`${pv}-gen`} style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg, borderLeft: "1px solid #e5e7eb" }}>MWh/yr</th>
                     <th key={`${pv}-cf`}  style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg }}>CF%</th>
                     <th key={`${pv}-delta`} style={{ padding: "4px 4px", textAlign: "center", fontSize: "9px", fontWeight: "600", color: "#9ca3af", borderBottom: "1px solid #e5e7eb", background: card.bg }}>vs Base</th>
                   </>
@@ -214,7 +217,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                           <div style={{ fontSize: "12px", fontWeight: s.bold ? "700" : "500", color: s.bold ? card.accent : "#111827" }}>{fmt(gen)}</div>
                         </td>
                         <td key={`${pv}-cf`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
-                          <div style={{ fontSize: "11px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#6b7280" }}>{fmt(ratedCap > 0 ? gen / ratedCap * 100 : 0)}%</div>
+                          <div style={{ fontSize: "11px", fontWeight: s.bold ? "700" : "400", color: s.bold ? card.accent : "#6b7280" }}>{fmt(ratedCap > 0 ? gen / (ratedCap * 1000) * 100 : 0)}%</div>
                         </td>
                         <td key={`${pv}-delta`} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "1px solid #f3f4f6" }}>
                           {s.bold ? (
@@ -258,7 +261,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                 readOnly
                 style={{ width: "100%", boxSizing: "border-box", padding: "10px 52px 10px 13px", fontSize: "14px", fontFamily: "'DM Sans',sans-serif", color: "#111827", background: "#fff", border: "1.5px solid #fde68a", borderRadius: "9px", outline: "none" }}
               />
-              <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#9ca3af", pointerEvents: "none" }}>GWh/yr</span>
+              <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#9ca3af", pointerEvents: "none" }}>MWh/yr</span>
             </div>
           </div>
           <div style={{ flex: "2", minWidth: "260px" }}>
@@ -271,7 +274,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
                   : "⚠️ Caution — Below P75 Standard (50–75% exceedance)"}
               </div>
               <div style={{ fontSize: "14px", color: "#374151", lineHeight: "1.6" }}>
-                A minimum of <strong>{fmt(beGen)} GWh/yr</strong> corresponds to
+                A minimum of <strong>{fmt(beGen)} MWh/yr</strong> corresponds to
                 exceedance probability <strong style={{ fontSize: "16px" }}>P{fmt(bePval, 1)}</strong>.
               </div>
               <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
@@ -293,7 +296,7 @@ const SensitivityAnalysis = ({ p50, uncert, ratedCap, sigDelta, aepDelta, breake
           <strong>Upside:</strong> Lower uncertainty + higher AEP estimate (optimistic). &nbsp;
           <strong>Base:</strong> Your inputs as entered. &nbsp;
           <strong>Downside:</strong> Higher uncertainty + lower AEP estimate (stress case). &nbsp;
-          "vs Base" shows GWh and % change relative to the base case.
+          "vs Base" shows MWh and % change relative to the base case.
         </div>
       </div>
     </div>
@@ -338,8 +341,8 @@ export default function WindPOECalculator() {
         p50 = net;
       }
       const u = uncert / 100, ratedCap = (rated * hrs / 1000) * nTurb;
-      const cards   = CARDS.map(c => { const z = getZ(c.p), gen = calcGen(p50, u, z), cf = ratedCap > 0 ? gen / ratedCap * 100 : 0; return { ...c, gen, cf }; });
-      const allRows = PVAL.map((p, i) => { const gen = p50 * (1 - ZVAL[i] * u); return { p, z: ZVAL[i], gen, cf: ratedCap > 0 ? gen / ratedCap * 100 : 0 }; });
+      const cards   = CARDS.map(c => { const z = getZ(c.p), gen = calcGen(p50, u, z), cf = ratedCap > 0 ? gen / (ratedCap * 1000) * 100 : 0; return { ...c, gen, cf }; });
+      const allRows = PVAL.map((p, i) => { const gen = p50 * (1 - ZVAL[i] * u) * 1000; return { p, z: ZVAL[i], gen, cf: ratedCap > 0 ? gen / (ratedCap * 1000) * 100 : 0 }; });
       setResults({ cards, allRows, p50, ratedCap, totalMW: rated * nTurb, uncert });
     } catch (e) { setError("Error: " + e.message); }
   }, [useGross, grossAEP, netAEP, wakes, otherLosses, uncertainty, numTurb, ratedMW, hours]);
@@ -435,10 +438,10 @@ export default function WindPOECalculator() {
                     <div>
                       <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "5px" }}>Break-Even Generation <span style={{ color: "#9ca3af", fontWeight: "400" }}>(optional)</span></label>
                       <div style={{ position: "relative" }}>
-                        <input type="number" value={breakeven} onChange={e => setBreakeven(e.target.value)} placeholder="Min. GWh from fin. model"
+                        <input type="number" value={breakeven} onChange={e => setBreakeven(e.target.value)} placeholder="Min. MWh from fin. model"
                           style={{ width: "100%", boxSizing: "border-box", padding: "9px 52px 9px 13px", fontSize: "14px", fontFamily: "'DM Sans',sans-serif", color: "#111827", background: "#fff", border: "1.5px solid #fde68a", borderRadius: "8px", outline: "none" }}
                           onFocus={e => { e.target.style.borderColor = "#f59e0b"; }} onBlur={e => { e.target.style.borderColor = "#fde68a"; }} />
-                        <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#9ca3af", pointerEvents: "none" }}>GWh/yr</span>
+                        <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#9ca3af", pointerEvents: "none" }}>MWh/yr</span>
                       </div>
                       <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px" }}>Finds the corresponding P-value</div>
                     </div>
@@ -461,7 +464,7 @@ export default function WindPOECalculator() {
               {/* Summary bar */}
               <div style={{ background: "linear-gradient(135deg,#0f2744,#1e3a5f)", borderRadius: "16px", padding: "20px 28px", marginBottom: "18px", display: "grid", gridTemplateColumns: "repeat(3,1fr)" }}>
                 {[
-                  { lbl: "P75 Net AEP",       val: fmt(results.cards.find(c=>c.p===75)?.gen) + " GWh", sub: "Company standard output" },
+                  { lbl: "P75 Net AEP",       val: fmt(results.cards.find(c=>c.p===75)?.gen) + " MWh", sub: "Company standard output" },
                   { lbl: "Installed Capacity", val: fmt(results.totalMW)  + " MW",  sub: "Total nameplate" },
                   { lbl: "Uncertainty (1σ)",   val: fmt(results.uncert,1) + "%",    sub: "Energy estimate spread" },
                 ].map((s, i) => (
@@ -493,7 +496,7 @@ export default function WindPOECalculator() {
                       <div style={{ marginBottom: "14px" }}>
                         <div style={{ fontSize: "11px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "3px" }}>Annual Generation</div>
                         <div style={{ fontSize: "30px", fontWeight: "800", color: "#111827", lineHeight: 1, fontFamily: "'Playfair Display',serif" }}>{fmt(c.gen)}</div>
-                        <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>GWh / year</div>
+                        <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>MWh / year</div>
                       </div>
                       <div style={{ height: "1px", background: "#f3f4f6", margin: "12px 0" }} />
                       <div style={{ marginBottom: "12px" }}>
@@ -513,8 +516,8 @@ export default function WindPOECalculator() {
               <div style={{ background: "#fff", borderRadius: "16px", padding: "18px 22px", marginBottom: "16px", border: "1.5px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
                 <div style={{ fontSize: "12px", fontWeight: "700", color: "#6b7280", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.08em" }}>📋 Key Takeaway</div>
                 <div style={{ fontSize: "15px", color: "#374151", lineHeight: "1.75" }}>
-                  The company’s <strong style={{ fontSize: "17px", color: "#92400e", background: "#fef3c7", padding: "1px 6px", borderRadius: "4px" }}>P75 target is {fmt(p75c?.gen)} GWh/year</strong> ({fmt(p75c?.cf)}% CF) — a conservative estimate with 75% confidence of exceedance, and <strong>Aboitiz’s primary planning basis</strong>.{" "}
-                  The expected output (P50) is <strong style={{ color: "#166534" }}>{fmt(p50c?.gen)} GWh/year</strong> ({fmt(p50c?.cf)}% CF), while the lender’s bankable floor (P90) is <strong style={{ color: "#1e3a8a" }}>{fmt(p90c?.gen)} GWh/year</strong> ({fmt(p90c?.cf)}% CF).
+                  The company's <strong style={{ fontSize: "17px", color: "#92400e", background: "#fef3c7", padding: "1px 6px", borderRadius: "4px" }}>P75 target is {fmt(p75c?.gen)} MWh/year</strong> ({fmt(p75c?.cf)}% CF) — a conservative estimate with 75% confidence of exceedance, and <strong>Aboitiz's primary planning basis</strong>.{" "}
+                  The expected output (P50) is <strong style={{ color: "#166534" }}>{fmt(p50c?.gen)} MWh/year</strong> ({fmt(p50c?.cf)}% CF), while the lender's bankable floor (P90) is <strong style={{ color: "#1e3a8a" }}>{fmt(p90c?.gen)} MWh/year</strong> ({fmt(p90c?.cf)}% CF).
                 </div>
               </div>
 
@@ -541,7 +544,7 @@ export default function WindPOECalculator() {
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
                       <thead>
                         <tr style={{ background: "#f9fafb" }}>
-                          {["P-Value", "Z-Score", "Generation (GWh)", "Capacity Factor"].map(h => (
+                          {["P-Value", "Z-Score", "Generation (MWh)", "Capacity Factor"].map(h => (
                             <th key={h} style={{ padding: "11px 18px", textAlign: "left", fontSize: "11px", fontWeight: "700", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #e5e7eb" }}>{h}</th>
                           ))}
                         </tr>
